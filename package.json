@@ -1,0 +1,22 @@
+{
+  "name": "advent2018",
+  "version": "1.0.0",
+  "description": "",
+  "main": "1a.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m-zawilski/advent2018.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/m-zawilski/advent2018/issues"
+  },
+  "homepage": "https://github.com/m-zawilski/advent2018#readme",
+  "dependencies": {
+    "file-system": "^2.2.2"
+  }
+}
