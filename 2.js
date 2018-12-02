@@ -36,18 +36,17 @@ const question = () => {
 			});
 			let hasTwo = false, hasThree = false;
 			arr.map((element) => {
-				if(element.number === 2 && !hasTwo){
+				if(!hasTwo && element.number === 2){
 					noOfTwos++;
 					hasTwo = true;
-				} else if (element.number === 3 && !hasThree){
+				} else if (!hasThree && element.number === 3){
 					noOfThrees++;
-					hasThree = false;
+					hasThree = true;
 				}
 			})
 			arr = [];
 		});
-		const answer = noOfTwos * noOfThrees;
-		console.log('Final number: ', answer);
+		console.log('Final number: ', noOfTwos * noOfThrees);
 	})
 }
 
@@ -58,27 +57,22 @@ question();
 const question2 = () => {
 	fs.readFile('./2.txt', (err, data) => {
 		const boxes = data.toString().split('\n');
-		let answer = '';
-		let position = -1;
-		let twoLetters = false;
-		for (let i = 0; i<boxes.length; i++){
-			for (let j = i+1; j<boxes.length; j++){
-				for (let k = 0; k<boxes[0].length; k++){
+		let answer = '', position = -1;
+		for (let i = 0; i<boxes.length; i++){					//first box to compare
+			for (let j = i+1; j<boxes.length; j++){			//second box to compare
+				for (let k = 0; k<boxes[0].length; k++){	//compare letter by letter
 					if (boxes[i][k] !== boxes[j][k]){
 						if (position === -1){
 							position = k;
 						} else {
 							position = -1;
-							twoLettres = true;
 							break;
 						}
 					}
 				}
-				if (twoLetters || position === -1){
-					position = -1;
-					twoLetters=false;
-				} else {
-					answer = boxes[i].substr(0, position) + boxes[i].substr(position+1, boxes[i].length-1);
+				if (position !== -1){
+					answer = boxes[i].substr(0, position) + 
+						boxes[i].substr(position+1, boxes[i].length-1);
 				}
 			}
 		}
