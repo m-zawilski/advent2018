@@ -1,5 +1,3 @@
-// read line
-// iterate while adding letters to four arrays - ones, twos and threes and more
 const fs = require('file-system');
 
 // What is the checksum of boxes?
@@ -52,7 +50,7 @@ const question = () => {
 
 question();
 
-// What are the common characters of two boxes with fabrics?
+// What are the common characters of two almost identical boxes?
 
 const question2 = () => {
 	fs.readFile('./2.txt', (err, data) => {
