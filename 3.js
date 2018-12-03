@@ -1,5 +1,17 @@
 const fs = require('file-system');
-// How many square inches of fabric are within two or more claims?
+
+const prepareData = (data) => {
+	const rowsOfData = data.toString().split('\n');
+	//transforming rows of data to array of claims data: 
+	//first corner coordinates (x,y), width and height
+	return rowsOfData.map((row) => {
+		const rowData = row.split(' @ ').slice(1,2).toString().
+		split(': ').toString().split('x').toString().split(',');
+		return rowData.map((element) => {
+			return Number(element);
+		})
+	})
+}
 
 const hasInch = (arr, x, y) => {
 	return x>arr[0] && y>arr[1] && x<=arr[0]+arr[2] && y<=arr[1]+arr[3];
@@ -55,21 +67,14 @@ const overlap = (firstClaim, secondClaim) => {
 					isACross(firstSquare, secondSquare);
 }
 
+// How many square inches of fabric are within two or more claims?
+
 const question1 = () => {
 	fs.readFile('./3.txt', (err, data) => {
 		const fabricSize = 1000;
 		let counter = 0;
 		let inchMarked = false;
-		const rowsOfData = data.toString().split('\n');
-		//transforming rows of data to array of claims data: 
-		//first corner coordinates (x,y), width and height
-		const claimsData = rowsOfData.map((row) => {
-			const rowData = row.split(' @ ').slice(1,2).toString().
-			split(': ').toString().split('x').toString().split(',');
-			return rowData.map((element) => {
-				return Number(element);
-			})
-		})
+		const claimsData = prepareData(data);
 		for(let i = 0; i<fabricSize; i++){
 			for(let j = 0; j<fabricSize; j++){
 				inchMarked = false;
@@ -96,16 +101,7 @@ const question2 = () => {
 		const overlappingClaims = [];
 		let winningClaim = 0;
 		let claimCounter = 1;
-		const rowsOfData = data.toString().split('\n');
-		//transforming rows of data to array of claims data: 
-		//first corner coordinates (x,y), width and height
-		const claimsData = rowsOfData.map((row) => {
-			const rowData = row.split(' @ ').slice(1,2).toString().
-			split(': ').toString().split('x').toString().split(',');
-			return rowData.map((element) => {
-				return Number(element);
-			})
-		})
+		const claimsData = prepareData(data);
 		claimsData.map((claim, claimNumber) => {
 					claimsData.map((secondClaim, secondClaimNumber) => {
 						if(!(claimNumber === secondClaimNumber)){
