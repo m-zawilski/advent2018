@@ -11,7 +11,7 @@ const createGuard = (guardNumber, timestampsArray) => {
 	}
 }
 
-const prepareData1 = (data) => {
+const prepareData = (data) => {
 	const rowsOfData = readData(data);
 	let currentGuard = null;
 	let timestamps = [];
@@ -100,9 +100,11 @@ const findTheMinute = (minutes) => {
 	};
 }
 
+//Which guard sleeps the most and on which minute specifically? 
+
 const question1 = () => {
 	const arr = fs.readFile('./4.txt', (err, data) => {
-		const dataPrepared = prepareData1(data);
+		const dataPrepared = prepareData(data);
 		const biggestSleeper = findBiggestSleeper(dataPrepared);
 		const theMinute = findTheMinute(biggestSleeper.minutesArray).theMinute;
 		console.log(`First strategy: Guard number ${biggestSleeper.number}` +
@@ -112,9 +114,11 @@ const question1 = () => {
 
 question1();
 
+//Which guard sleeps on a specific minute? 
+
 const question2 = () => {
 	const arr = fs.readFile('./4.txt', (err, data) => {
-		const dataPrepared = prepareData1(data);
+		const dataPrepared = prepareData(data);
 		let theMinuteData;
 		let maxOccurances = 0;
 		let guardNumber, minute;
