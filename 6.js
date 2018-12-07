@@ -131,7 +131,7 @@ const findSafeRegion = (startingBeacons) => {
 
 const question1 = () => {
 	const corner = 0;
-	const side = 500;
+	const side = 400;
 	const points = [];
 	const arr = fs.readFile('./6.txt', (err, data) => {
 		const startingBeacons = data.toString().split('\n').map((element) => {
@@ -168,7 +168,7 @@ const question1 = () => {
 			}
 		})
 		let maxArea = findLargest(nonInfiniteBeacons, points);
-		console.log(`The maximum area measures ${maxArea}.`);
+		console.log(`The maximum non-infinite area measures ${maxArea}.`);
 	})
 }
 
@@ -183,7 +183,7 @@ const question2 = () => {
 			});
 		});
 		let safeRegion = findSafeRegion(startingBeacons);
-		console.log(`The safe region measures ${safeRegion}.`)
+		console.log(`The region not further away than 10000 from every point measures ${safeRegion}.`)
 	})
 }
 
