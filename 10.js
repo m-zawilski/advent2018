@@ -183,6 +183,15 @@ const checkIfAreClose = (pointsOfLight, distance) => {
 	} else return false;
 }
 
+const getMin = (pointsOfLight, coord) => {
+	return pointsOfLight.reduce((min, point) => {
+		if(point[coord] < min){
+			min = point[coord];
+		} 
+		return min;
+	}, Infinity)
+}
+
 const wypisz = (pointsOfLight) => {
 	let answer = '';
 	const coordinates = pointsOfLight.map((point) => {
@@ -191,8 +200,10 @@ const wypisz = (pointsOfLight) => {
 			y: point.y
 		})
 	})
-	for(let i = 0; i<400; i++) {
-		for(let j = 0; j<400; j++){
+	const yMin = getMin(pointsOfLight, 'y');
+	const xMin = getMin(pointsOfLight, 'x');
+	for(let i = yMin-5; i<yMin+15; i++) {
+		for(let j = xMin-20; j<xMin+80; j++){
 			if(coordinates.indexOf(JSON.stringify({x: j, y: i})) !== -1){
 				answer += '#';
 			} else {
@@ -229,7 +240,7 @@ const question = () => {
 			pointsOfLight = runTurns(pointsOfLight, 1);
 		}
 		const answer = wypisz(pointsOfLight);
-		fs.writeFile('answer10a.txt', answer);
+		console.log(`The code is: \n${answer}`);
 		console.log(`They had to wait ${seconds} seconds.`);
 	})
 }
