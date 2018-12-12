@@ -117,7 +117,6 @@ const getAllSquares = (cells, boardSize) => {
 	cells.map((cell, i, array) => {
 		let newSquares = getPossibleSquares(cell, i, array, boardSize);
 		if (newSquares !== null) squares.push(...newSquares);
-		console.log(cell.x, cell.y);
 	})
 	return squares;
 }
