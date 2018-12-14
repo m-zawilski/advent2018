@@ -19,7 +19,5 @@
   "dependencies": {
     "file-system": "^2.2.2"
   },
-  "devDependencies": {
-    "chai": "^4.2.0"
-  }
+  "devDependencies": {}
 }
