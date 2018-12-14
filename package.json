@@ -4,7 +4,7 @@
   "description": "",
   "main": "1a.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -17,6 +17,11 @@
   },
   "homepage": "https://github.com/m-zawilski/advent2018#readme",
   "dependencies": {
-    "file-system": "^2.2.2"
+    "file-system": "^2.2.2",
+    "fs": "0.0.1-security"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0"
   }
 }
