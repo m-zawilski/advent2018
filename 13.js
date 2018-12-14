@@ -335,6 +335,9 @@ removeCrashedCarts = (carts, i) => {
 	const newCarts = [];
 	carts.map((cart) => {
 		if(!cart.crashed) newCarts.push(cart);
+		else {
+			console.log(`${cart.x}, ${cart.y}, turn ${i}`);
+		}
 	})
 	return newCarts;
 }
