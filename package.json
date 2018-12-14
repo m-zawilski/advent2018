@@ -18,5 +18,8 @@
   "homepage": "https://github.com/m-zawilski/advent2018#readme",
   "dependencies": {
     "file-system": "^2.2.2"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0"
   }
 }
