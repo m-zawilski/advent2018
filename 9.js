@@ -57,12 +57,12 @@ const fs = require('file-system');
 
 class boardNode {
 	constructor(value){
-		this.value = value;
-		this.previousNode = null;
-		this.nextNode = null;
+		this.value = value,
+		this.previousNode = null,
+		this.nextNode = null
 	}
 
-	appendNode(value){
+	appendNode(value, list){
 		let newNode = new boardNode(value);
 		this.nextNode.previousNode = newNode;
 		newNode.previousNode = this;
@@ -81,7 +81,7 @@ class boardNode {
 class LinkedList {
 	constructor(value) {
 		let firstNode = new boardNode(value);
-		this.head = firstNode;
+		this.head = firstNode
 		firstNode.nextNode = this.head;
 		firstNode.previousNode = this.head;
 	}
@@ -105,7 +105,7 @@ const playGame = (players, noOfMarbles) => {
 		const currentPlayer = players[currentMarble%players.length];
 		if (currentMarble%23 !== 0){
 			active = active.nextNode.nextNode;
-			active.appendNode(currentMarble);
+			active.appendNode(currentMarble, board);
 		} else {
 			currentPlayer.score+=currentMarble;
 			for(let i = 0; i<7; i++){
