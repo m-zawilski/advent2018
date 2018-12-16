@@ -1,7 +1,7 @@
 {
   "name": "advent2018",
   "version": "1.0.0",
-  "description": "",
+  "description": "My answers for https://adventofcode.com/2018 problems, using NodeJS.",
   "main": "1a.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/m-zawilski/advent2018#readme",
   "dependencies": {
+    "chai": "^4.2.0",
     "file-system": "^2.2.2"
-  }
+  },
+  "devDependencies": {}
 }

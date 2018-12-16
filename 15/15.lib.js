@@ -1,6 +1,4 @@
-const fs = require('file-system');
-
-const prepareMap = (data) => {
+const prepareMap = (data, strength) => {
 	const mapLength = data.toString().split('\n')[0].length;
 	const map = data.toString().split('').map((el, i) => {
 		if (el !== '\n' && el !== '#') return {
@@ -14,9 +12,9 @@ const prepareMap = (data) => {
 	});
 	const units = [];
 	map.filter((el) => {
-		let str = 3;
+		let power = 3;
 		if(el.symbol === 'E') {
-			str = 23;
+			power = strength;
 		}
 		if (el.symbol === 'E' || el.symbol === 'G') 
 		units.push( {
@@ -26,7 +24,7 @@ const prepareMap = (data) => {
 			adjacent: [],
 			reachableEnemies: [],
 			health: 200,
-			attack: str,
+			attack: power,
 			alive: true
 		})
 	})
@@ -289,63 +287,70 @@ const paint = (map) => {
 	console.log(k)
 }
 
-const question = (number) => {
-	const arr = fs.readFile('./15.txt', (err, data) => {
-		let { map, units } = prepareMap(data);
-		let end = false;
-		let rounds = 0;
-		console.log(units);
-		while(!end){
-			//paint(map)
-			sortUnits(units);
-			units.map((unit, i) => {
-				let attacked = false;
-				if(!unit.alive) return;
-				if (!areEnemiesAlive(unit, units)){
-					end = true;
-				}
-				if (end === true) return;
-				map = updateAdjecentFields(map);
-				units = updateUnitsAdjecentFields(units, map);
-				if(isEnemyNearby(unit)){
-					attack(unit, units);
-					attacked = true;
-				} else {
-					const direction = findNearestField(unit, map);
-					if (direction){
-						unit = move(unit, direction);
-					}
-				}
-				map = updateAdjecentFields(map);
-				units = updateUnitsAdjecentFields(units, map);
-				if(!attacked && isEnemyNearby(unit)){
-					attack(unit, units);
-				}
-				units = gravetaking(units);
-				map = updateMap(map, units);
-			})
-			getTotalHealth(units);
-			if (end === false) rounds++;
+const question = (data, strength) => {
+	let { map, units } = prepareMap(data, strength);
+	let end = false;
+	let rounds = 0;
+	let elvesAtStart = 0;
+	units.map((u) => {
+		if(u.symbol === 'E'){
+			elvesAtStart++;
 		}
-		let noOfElves = 0;
-		units.map((u) => {
-			console.log(u.symbol);
-			if(u.symbol === 'E'){
-				noOfElves++;
-			}
-		})
-		console.log(noOfElves);
-		const answer = rounds*getTotalHealth(units);
-		return console.log(answer);
 	})
+	while(!end){
+		//paint(map)
+		sortUnits(units);
+		units.map((unit, i) => {
+			let attacked = false;
+			if(!unit.alive) return;
+			if (!areEnemiesAlive(unit, units)){
+				end = true;
+			}
+			if (end === true) return;
+			map = updateAdjecentFields(map);
+			units = updateUnitsAdjecentFields(units, map);
+			if(isEnemyNearby(unit)){
+				attack(unit, units);
+				attacked = true;
+			} else {
+				const direction = findNearestField(unit, map);
+				if (direction){
+					unit = move(unit, direction);
+				}
+			}
+			map = updateAdjecentFields(map);
+			units = updateUnitsAdjecentFields(units, map);
+			if(!attacked && isEnemyNearby(unit)){
+				attack(unit, units);
+			}
+			units = gravetaking(units);
+			map = updateMap(map, units);
+		})
+		getTotalHealth(units);
+		if (end === false) rounds++;
+	}
+	let noOfElves = 0;
+	units.map((u) => {
+		if(u.symbol === 'E'){
+			noOfElves++;
+		}
+	})
+	const score = rounds*getTotalHealth(units);
+	console.log(`The score with elves strength of ${strength} is ${score}.`);
+	return (noOfElves === elvesAtStart) ? {
+		elvesWon: true,
+		score: score
+	} : {
+		elvesWon: false,
+		score: score
+	}
 }
-
-question();
 
 module.exports = {
 	getTotalHealth,
 	gravetaking, 
 	move,
 	areEnemiesAlive,
-	isEnemyNearby
+	isEnemyNearby, 
+	question
 }
