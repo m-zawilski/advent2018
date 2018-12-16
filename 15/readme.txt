@@ -1,8 +1,5 @@
-Advent of Code[About][Events][Shop][Settings][Log Out]Maciej Zawilski 30*
-  {year=>2018}[Calendar][AoC++][Sponsors][Leaderboard][Stats]
-Our sponsors help make Advent of Code possible:
-Clubhouse - The first project management platform for software development that brings everyone on every team together to build better products. AoC participants get two free months by signing up at r.clbh.se/mze9q9P Also, we're hiring!
 --- Day 15: Beverage Bandits ---
+
 Having perfected their hot chocolate, the Elves have a new problem: the Goblins that live in these caves will do anything to steal it. Looks like they're here for a fight.
 
 You scan the area, generating a map of the walls (#), open cavern (.), and starting position of every Goblin (G) and Elf (E) (your puzzle input).
