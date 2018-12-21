@@ -99,7 +99,6 @@ const runInstruction = (pointer, instructionLines, registers) => {
 const getFinalRegisters = (pointer, instructionLines, registers) => {
 	while(registers[pointer] <= instructionLines.length){
 		registers = runInstruction(pointer, instructionLines, registers);
-		console.log(registers);
 	}
 	return registers;
 }
