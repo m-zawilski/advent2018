@@ -54,6 +54,7 @@ In the cave system above, because the mouth is at 0,0 and the target is at 10,10
 What is the total risk level for the smallest rectangle that includes 0,0 and the target's coordinates?
 
 --- Part Two ---
+
 Okay, it's time to go rescue the man's friend.
 
 As you leave, he hands you some tools: a torch and some climbing gear. You can't equip both tools at once, but you can choose to use neither.
