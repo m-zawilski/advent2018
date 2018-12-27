@@ -47,6 +47,12 @@ const findCoordinates = (dataLines) => {
 		}
 		return max;
 	}, 0) + 1;
+	const minY = ys.reduce((min, y) => {
+		if(y<min){
+			min = y;
+		}
+		return min;
+	}, Infinity);
 	const maxY = ys.reduce((max, y) => {
 		if(y>max){
 			max = y;
@@ -56,6 +62,7 @@ const findCoordinates = (dataLines) => {
 	return {
 		minX: minX,
 		maxX: maxX,
+		minY: minY,
 		maxY: maxY
 	}
 }
@@ -83,7 +90,6 @@ const prepareData = (data) => {
 	const dataLines = data.toString().split('\n');
 	const clays = getClays(dataLines);
 	const boxCoords = findCoordinates(dataLines);
-	boxCoords.minY = spring.y;
 	return {
 		clays: clays,
 		boxCoords: boxCoords,
@@ -95,7 +101,23 @@ const prepareData = (data) => {
 
 /* Simulation */
 
-const canGoThere = (element, xChange, yChange, ...blockades) => {
+const canGoThere = (element, ...blockades) => {
+	let xChange = 0, yChange = 0;
+	switch(element.direction){
+		case 'left':
+			xChange--;
+			break;
+		case 'right':
+			xChange++;
+			break;
+		case 'up':
+			yChange--;
+			break;
+		case 'down':
+			yChange++;
+			break;
+	}
+
 	return !blockades.some((blockade) => {
 		if(blockade.x === element.x+xChange && blockade.y === element.y+yChange){
 			return true;
@@ -108,11 +130,7 @@ const getSpring = (x,y,direction) => {
 		x: x,
 		y: y,
 		direction: direction,
-		children: [],
-		canGoDown: function(clays, stillWater, maxY){
-			if(this.y === maxY) return false;
-			return canGoThere(this, 0, 1, ...clays, ...stillWater);
-		},
+		active: true,
 		move: function(){
 			if (this.direction === 'down'){
 				this.y++;
@@ -120,141 +138,168 @@ const getSpring = (x,y,direction) => {
 				this.x--;
 			} else if (this.direction === 'right'){
 				this.x++;
-			}
-		},
-		moveUp: function(){
-			this.y--;
-		},
-		canGoSide: function(clays, stillWater){
-			if (this.direction === 'left'){
-			return canGoThere(this, -1, 0, ...clays, ...stillWater);
-			} else if (this.direction === 'right'){
-			return canGoThere(this, 1, 0, ...clays, ...stillWater);
+			} else if (this.direction === 'up'){
+				this.y--;
 			}
 		}
 	}
 }
 
-const addToArray = (point, array) => {
+const addToArray = (array, point) => {
+	let added = true;
 	array.some((w) => {
 		if(w.x === point.x && w.y === point.y) return true;
-	}) ? null : array.push(getPoint(point.x, point.y));
+	}) ? (added = false) : array.push(getPoint(point.x, point.y));
+	return added;
 }
 
-const createProbes = (spring, clays, wetSand, stillWater) => {
-	const probes = [];
-	spring.direction = 'left';
-	if(spring.canGoSide(clays, stillWater)) {
-		probes.push(getSpring(spring.x, spring.y, 'left'));
-	}
-	spring.direction = 'right';
-	if(spring.canGoSide(clays, stillWater)) {
-		probes.push(getSpring(spring.x, spring.y, 'right'));
-	}
-	return probes;
-}
-
-const moveHorizontally = (probes, clays, stillWater, wetSand) => {
-	const rainArray = [];
-	const waysOut = [];
+const runProbes = (probes, clays) => {
 	probes.map((probe) => {
-		let gotOverWall = false;
-		while(probe.canGoSide(clays, stillWater) && !gotOverWall){
-				console.log(probe);
-			rainArray.push(getPoint(probe.x, probe.y));
+		let exitFound = false;
+		let initialDirection = probe.direction;
+		while(canGoThere(probe, ...clays)) probe.move();
+		while(!exitFound){
+			probe.direction = 'up';
 			probe.move();
-			rainArray.push(getPoint(probe.x, probe.y));
-			if(!probe.canGoDown(clays, stillWater, Infinity)){
-				gotOverWall = true;
-			}
+			probe.direction = initialDirection;
+			if(canGoThere(probe, ...clays)){
+				exitFound = true;
+			} 
 		}
-		if(gotOverWall){
-			probe.move();
-			waysOut.push(getPoint(probe.x, probe.y));
-		}
+		probe.move();
+		probe.move();
 	})
-	return {
-		rainArray: rainArray,
-		waysOut: waysOut
-	}
 }
 
-const runProbes = (spring, clays, wetSand, stillWater, springs) => {
-	const probes = [];
-	probes.push(...createProbes(spring, clays, wetSand, stillWater));
-	if(probes.length > 0) {
-		const { rainArray, waysOut } = moveHorizontally(probes, clays, stillWater, wetSand);
-		return {
-			rainArray: rainArray,
-			waysOut: waysOut
+const isBlockInTheMiddle = (probes, clays) => {
+	probes[0].direction = 'right';
+	let answer = null;
+	while(probes[0].x < probes[1].x && canGoThere(probes[0], ...clays)){
+		probes[0].move();
+		answer = probes[0].x;
+		if(probes[0].x === probes[1].x){
+			answer = null;
+		}
+	}
+	return answer;
+}
+
+const createRainArray = (exits, rainArray, blockInTheMiddle, clays) => {
+	if(exits.length === 2){
+		const rainLength = exits[1].x - exits[0].x;
+		for(let i = 1; i<rainLength; i++){
+			rainArray.push(getPoint(exits[0].x+i, exits[0].y));
 		}
 	} else {
-		return {
-			rainArray: [],
-			waysOut: []
-		}
-	}
-}
-
-const findWayOut = (spring, clays, wetSand, stillWater, springs) => {
-	while(true){
-		spring.moveUp();
-		const { rainArray, 
-						waysOut } = runProbes(spring, clays, wetSand, stillWater, springs);
-		if(waysOut.length > 0){
-			return { rainArray: rainArray,
-								waysOut: waysOut };
-		}
-	}
-}
-
-const spreadHorizontally = (spring, clays, wetSand, stillWater) => {
-	const horizontalRain = createProbes(spring, clays, wetSand, stillWater);
-	if(horizontalRain.length !== 0){
-		horizontalRain.map((hRain) => {
-			stillWater.push(getPoint(hRain.x, hRain.y));
-			while(hRain.canGoSide(clays, stillWater)){
-				hRain.move();
-				stillWater.push(getPoint(hRain.x, hRain.y));
-				if(hRain.canGoDown(clays, stillWater, Infinity)){
-					let newSpring = getSpring(hRain.x, hRain.y, 'down');
-					while(newSpring.canGoDown(clays, stillWater)){
-						newSpring.move();
-					}
-					spreadHorizontally(newSpring, clays, wetSand, stillWater);
-				}
+		if(exits[0].direction === 'left'){
+			const rainLength = Math.abs(exits[0].x - blockInTheMiddle);
+			for(let i = 1; i<rainLength+1; i++){
+				rainArray.push(getPoint(exits[0].x+i, exits[0].y));
 			}
-		})			
+		} else {
+			const probe = getSpring(exits[0].x, exits[0].y, 'left');
+			let block = 0;
+			while(canGoThere(probe, ...clays)){
+				probe.move();
+				block = probe.x;
+			}
+			const rainLength = Math.abs(exits[0].x - block);
+			for(let i = rainLength; i>0; i--){
+				rainArray.push(getPoint(exits[0].x-i, exits[0].y));
+			}
+		}
 	}
 }
 
-const fillBowl = (rainArray, clays, wetSand, stillWater ) => {
-	const newSprings = rainArray.map((rain) => {
-		return newSpring = getSpring(rain.x, rain.y, 'down');
+const determineExit = (probes, clays, spring) => {
+	const rainArray = [], exits = [];
+	const initialProbes = JSON.parse(JSON.stringify(probes));
+	const blockInTheMiddle = isBlockInTheMiddle(probes, clays);
+	if(blockInTheMiddle){
+		blockInTheMiddle>spring.x ? exits.push(initialProbes[0]) 
+																: exits.push(initialProbes[1]);
+	} else {
+		if(initialProbes[0].y > initialProbes[1].y){
+			exits.push(initialProbes[0])
+		} else if (initialProbes[0].y === initialProbes[1].y){
+			exits.push(...initialProbes);
+		} else {
+			exits.push(initialProbes[1]);
+		}
+	}
+	createRainArray(exits, rainArray, blockInTheMiddle, clays);
+	return {
+		newSprings: exits.map((exit) => {
+			return getSpring(exit.x, exit.y, 'down');
+		}),
+		rainArray: rainArray
+	}
+}
+
+const findExit = (spring, clays) => {
+	const probes = [getSpring(spring.x, spring.y, 'left'), 
+									getSpring(spring.x, spring.y, 'right')];
+  runProbes(probes, clays);
+  return determineExit(probes, clays, spring);
+}
+
+const spreadVertically = (point, direction, clays, stillWater) => {
+	let rainSpring = getSpring(point.x, point.y, 'down');
+	const verticalSprings = [];
+	while(canGoThere(rainSpring, ...clays)){
+		rainSpring.move();
+		verticalSprings.push(getSpring(rainSpring.x, rainSpring.y, direction));
+		addToArray(stillWater, getPoint(rainSpring.x, rainSpring.y));
+	}
+	verticalSprings.map((vs) => {
+		while(canGoThere(vs, ...clays)){
+			vs.move();	
+			addToArray(stillWater, getPoint(vs.x, vs.y));
+		}
 	})
-	let bowlFilled = false;
-	while(!bowlFilled){
-		bowlFilled = true;
-		newSprings.map((rain) => {
-			wetSand.push(getPoint(rain.x, rain.y));
-			const newSpring = getSpring(rain.x, rain.y, 'down');
-			if(!newSpring.canGoDown(clays, [], Infinity)) {return;}
-			while(newSpring.canGoDown(clays, [], Infinity)){
-				newSpring.move();
-				stillWater.push(getPoint(newSpring.x, newSpring.y));
-				wetSand.some((sand, i) => {
-					if(sand.x === newSpring.x && sand.y === newSpring.y){
-						wetSand.splice(i,1);
-						return true;
-					}
-				})
-			}
-			while(newSpring.y !== rain.y){
-				spreadHorizontally(newSpring, clays, wetSand, stillWater);
-				newSpring.moveUp();
+}
+
+const spreadHorizontally = (rainArray, clays, stillWater) => {
+	rainArray.map((rain) => {
+		const rainSpring = getSpring(rain.x, rain.y, 'down');
+		while(canGoThere(rainSpring, ...clays)){
+			rainSpring.move();
+			addToArray(stillWater, getPoint(rainSpring.x, rainSpring.y));
+		}
+	})
+}
+
+const fillBowl = (rainArray, clays, stillWater, wetSand) => {
+	rainArray.map((rain) => {
+		addToArray(wetSand, getPoint(rain.x, rain.y));
+	})
+	const firstSpring = getSpring(rainArray[0].x, rainArray[0].y, 'down');
+	const lastSpring = getSpring(rainArray[rainArray.length-1].x, 
+															 rainArray[rainArray.length-1].y, 'down');
+	if(!canGoThere(firstSpring, ...clays)){
+		rainArray.shift();
+	}
+	if(!canGoThere(lastSpring, ...clays)){
+		rainArray.pop();
+	}
+	spreadVertically(rainArray[0], 'right', clays, stillWater);
+	spreadVertically(rainArray[rainArray.length-1], 'left', clays, stillWater);
+	spreadHorizontally(rainArray, clays, stillWater);
+}
+
+const clearWetSands = (wetSand, stillWater) => {
+	const filteredSand = [];
+	wetSand.map((ws) => {
+		let found = false;
+		stillWater.some((sw) => {
+			if(sw.x === ws.x && sw.y === ws.y){
+				found = true;
+				return found;
 			}
 		})
-	}
+		if(!found) filteredSand.push(ws);
+	})
+	return filteredSand;
 }
 
 const runSimulation = (clays, firstSpring, boxCoords) => {
@@ -263,35 +308,40 @@ const runSimulation = (clays, firstSpring, boxCoords) => {
 	const wetSand = [];
 	springs.push(getSpring(firstSpring.x, firstSpring.y, 'down'));
 	let wasWaterAdded = true;
-	let x = 0;
-	while(wasWaterAdded){
+
+	while(wasWaterAdded) {
 		wasWaterAdded = false;
-		springs.map((spring, i) => {
-			console.log(spring);
-			while(spring.canGoDown(clays, [], boxCoords.maxY)){
-				wasWaterAdded = true;
-				spring.move();
-				addToArray(spring, wetSand);
-			}
-			if(canGoThere(spring, 0, 1, clays)){
-				const { rainArray, waysOut } = findWayOut(spring, clays, wetSand, stillWater, springs);
-				if(rainArray){
-					fillBowl(rainArray, clays, wetSand, stillWater);
+		springs.map((spring) => {
+			if(!spring.active) return;
+			wasWaterAdded = true;
+			while(canGoThere(spring, ...clays)){
+				if(spring.y >= boxCoords.minY){
+					addToArray(wetSand, getPoint(spring.x, spring.y));
 				}
-				waysOut.map((wayOut) => {
-					const newSpring = getSpring(wayOut.x, wayOut.y, 'down');
-					springs.push(newSpring);
-					addToArray(newSpring, wetSand)
+				spring.move();
+				if(spring.y === boxCoords.maxY) {
+					spring.active = false;
+					addToArray(wetSand, getPoint(spring.x, spring.y));
+					return;
+				}
+			} 
+			const { newSprings, rainArray } = findExit(spring, clays);
+
+			newSprings.map((ns) => {
+				let found = false;
+				springs.map((spr) => {
+					if(spr.x === ns.x && spr.y === ns.y) found = true;
 				})
-			}
-			springs.splice(i,1);
+				if(!found) springs.push(ns);
+			})
+			spring.active = false;
+			fillBowl(rainArray, clays, stillWater, wetSand);
 		})
-		x++;
-		if (x===12) {wasWaterAdded = false;}
 	}
+
 	return {
 		water: stillWater,
-		wetSand: wetSand
+		wetSand: clearWetSands(wetSand, stillWater)
 	}
 }
 
@@ -299,7 +349,7 @@ const runSimulation = (clays, firstSpring, boxCoords) => {
 
 /* Exports */
 
-const question = (data, number) => {
+const question = (data) => {
 	const { clays, boxCoords, spring } = prepareData(data);
 	const { water, wetSand } = runSimulation(clays, spring, boxCoords);
 	return {
@@ -313,7 +363,7 @@ const drawToFile = (data) => {
 	const { water, wetSand } = runSimulation(clays, spring, boxCoords);
 	let map = ''; 
 	console.log('Drawing started');
-	for(let j = boxCoords.minY; j<=boxCoords.maxY/2; j++){ //division by 10 to make drawing for testing faster
+	for(let j = 0; j<=boxCoords.maxY; j++){ //division by 10 to make drawing for testing faster
 		map+='\n';
 		console.log(`Writing line #${j}.`);
 		for(let i = boxCoords.minX; i<=boxCoords.maxX; i++){
@@ -337,8 +387,8 @@ const drawToFile = (data) => {
 				}
 			})
 			if(isClay) map+='#';
-			else if(isWater) map+='~';
 			else if(isWetSand) map+='|';
+			else if(isWater) map+='~';
 			else map+='.';
 		}
 	}
